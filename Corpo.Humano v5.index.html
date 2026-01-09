@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCL - Corpo Humano Expandido</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            overflow: hidden;
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        .bio-grid {
+            background-image: 
+                linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .pulse-ring {
+            border: 2px solid #38bdf8;
+            border-radius: 50%;
+            position: absolute;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .scan-bar {
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #38bdf8, #0ea5e9, #38bdf8, transparent);
+            position: absolute;
+            width: 100%;
+            z-index: 20;
+            box-shadow: 0 0 20px #38bdf8;
+            animation: scan 5s ease-in-out infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .heart-beat {
+            transform-origin: center;
+            animation: beat var(--beat-speed, 0.8s) infinite cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes beat {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            15% { transform: scale(1.2); filter: brightness(1.5); }
+            30% { transform: scale(1.1); }
+            45% { transform: scale(1.25); }
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+
+        .invention-card.active {
+            border-color: rgba(56, 189, 248, 0.5);
+            background: rgba(56, 189, 248, 0.1);
+        }
+    </style>
+</head>
+<body class="selection:bg-sky-500/30">
+
+    <!-- SCREENSAVER -->
+    <div id="screensaver" class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950 cursor-pointer transition-opacity duration-700">
+        <div class="z-10 text-center space-y-6">
+            <div class="relative flex items-center justify-center">
+                <div class="pulse-ring w-32 h-32"></div>
+                <div class="pulse-ring w-40 h-40" style="animation-delay: 0.5s"></div>
+                <i data-lucide="dna" class="w-16 h-16 text-sky-400"></i>
+            </div>
+            <h1 class="text-6xl font-black text-white tracking-tighter uppercase italic">BIO<span class="text-sky-400">.</span>CORE</h1>
+            <p class="text-sm text-sky-400 font-light tracking-[0.5em] uppercase italic">Laboratório de Biologia Expandida</p>
+            <div class="mt-12 text-white/20 text-[10px] tracking-widest uppercase italic animate-bounce italic">Toque para Sincronizar Áudio e Dados</div>
+        </div>
+    </div>
+
+    <!-- MAIN INTERFACE -->
+    <main id="main-view" class="hidden h-screen flex flex-col overflow-hidden">
+        <nav class="p-6 flex justify-between items-center border-b border-sky-900/30 bg-slate-950/90 backdrop-blur-md z-[110]">
+            <div class="flex items-center gap-4">
+                <div class="p-2 bg-sky-500 rounded-lg shadow-[0_0_15px_rgba(14,165,233,0.5)]">
+                    <i data-lucide="activity" class="w-6 h-6 text-slate-950"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-black text-white uppercase tracking-tighter italic">CCL - Bio-Saúde Tropical</h2>
+                    <span class="text-[10px] text-sky-400 font-bold uppercase tracking-[0.2em]">Sistemas de Monitorização Afrokódica</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="hidden md:flex flex-col items-end border-r border-sky-900/30 pr-6">
+                    <span class="text-[9px] text-sky-500 font-mono">STATUS: SISTEMA OPERACIONAL</span>
+                    <span id="nav-clock" class="text-xs font-mono text-white">00:00:00</span>
+                </div>
+                <button id="mute-btn" onclick="toggleMute()" class="p-2.5 bg-slate-900 border border-sky-800/50 rounded-xl text-sky-400 hover:bg-sky-500/10 transition-all flex items-center gap-2">
+                    <i id="mute-icon" data-lucide="volume-2" class="w-5 h-5"></i>
+                    <span id="mute-text" class="text-[9px] font-bold uppercase hidden md:inline">Audio On</span>
+                </button>
+                <button onclick="toggleTeacherMode(true)" class="flex items-center gap-2 px-5 py-2.5 bg-slate-900 border border-sky-800/50 rounded-xl text-xs font-bold text-sky-100 hover:bg-sky-500/10 transition-all shadow-lg shadow-sky-500/10">
+                    <i data-lucide="microscope" class="w-4 h-4 text-sky-400"></i> ACADEMIA BIO
+                </button>
+            </div>
+        </nav>
+
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+            <!-- SIDEBAR -->
+            <div class="lg:col-span-3 p-6 border-r border-sky-900/30 space-y-8 overflow-y-auto bg-slate-950/50">
+                <section>
+                    <h3 class="text-[10px] text-sky-400 font-black uppercase tracking-widest mb-6 italic">01. Protocolos de Scan</h3>
+                    <div class="space-y-4">
+                        <div id="mod-imune" onclick="setModule('imune')" class="invention-card glass p-5 rounded-2xl cursor-pointer border border-transparent active group">
+                            <div class="flex items-center gap-4">
+                                <div class="p-3 bg-sky-500/10 text-sky-400 rounded-xl group-hover:bg-sky-500 group-hover:text-slate-950 transition-all"><i data-lucide="shield-check" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-white uppercase">Rede Imunológica</h4>
+                                    <p class="text-[9px] text-slate-500 uppercase">Defesa Ativa</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="mod-nutri" onclick="setModule('nutri')" class="invention-card glass p-5 rounded-2xl cursor-pointer border border-transparent group">
+                            <div class="flex items-center gap-4">
+                                <div class="p-3 bg-amber-500/10 text-amber-500 rounded-xl group-hover:bg-amber-500 group-hover:text-slate-950 transition-all"><i data-lucide="apple" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-white uppercase">Bio-Combustível</h4>
+                                    <p class="text-[9px] text-slate-500 uppercase">Nutrição Ancestral</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="mod-scan" onclick="setModule('scan')" class="invention-card glass p-5 rounded-2xl cursor-pointer border border-transparent group">
+                            <div class="flex items-center gap-4">
+                                <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl group-hover:bg-emerald-500 group-hover:text-slate-950 transition-all"><i data-lucide="scan-eye" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-white uppercase">Check-up Tropical</h4>
+                                    <p class="text-[9px] text-slate-500 uppercase">Stress Térmico</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="space-y-6">
+                    <h3 class="text-[10px] text-sky-400 font-black uppercase tracking-widest italic">02. Moduladores de Bio-Feedback</h3>
+                    <div class="space-y-5">
+                        <div class="space-y-2 p-4 bg-sky-500/5 rounded-xl border border-sky-500/10">
+                            <div class="flex justify-between text-[10px] uppercase font-bold text-slate-400">
+                                <span>Hidratação Celular</span>
+                                <span id="val-water" class="text-sky-400 font-mono">75%</span>
+                            </div>
+                            <input type="range" id="input-water" min="0" max="100" value="75" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-sky-500">
+                        </div>
+                        <div class="space-y-2 p-4 bg-sky-500/5 rounded-xl border border-sky-500/10">
+                            <div class="flex justify-between text-[10px] uppercase font-bold text-slate-400">
+                                <span>Nutrição Ativa</span>
+                                <span id="val-nutri" class="text-amber-400 font-mono">80%</span>
+                            </div>
+                            <input type="range" id="input-nutri" min="0" max="100" value="80" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-amber-500">
+                        </div>
+                    </div>
+                </section>
+
+                <div class="p-5 bg-sky-500/5 rounded-2xl border border-sky-500/10 mt-auto">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i data-lucide="cpu" class="w-3 h-3 text-sky-400"></i>
+                        <span class="text-[9px] font-black text-sky-400 uppercase tracking-widest">Processamento Bio-Digital</span>
+                    </div>
+                    <p id="bio-insight" class="text-[11px] text-slate-400 leading-relaxed italic">Analisando padrões de resiliência tropical em tempo real.</p>
+                </div>
+            </div>
+
+            <!-- CANVAS -->
+            <div class="lg:col-span-6 relative bg-slate-900 bio-grid flex items-center justify-center overflow-hidden">
+                <div class="scan-bar"></div>
+                <div id="body-viz" class="relative w-full h-full flex items-center justify-center">
+                    <svg id="human-svg" class="w-2/3 h-5/6 text-sky-500/30 transition-all duration-700" viewBox="0 0 200 500" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M100 20 C115 20 125 35 125 50 C125 65 115 80 100 80 C85 80 75 65 75 50 C75 35 85 20 100 20 Z" /> 
+                        <path d="M75 80 L125 80 L140 180 L60 180 Z" /> 
+                        <path d="M75 180 L70 450 M125 180 L130 450" /> 
+                        <g id="heart-group" class="heart-beat">
+                            <circle cx="100" cy="120" r="8" fill="rgba(244, 63, 94, 0.4)" />
+                            <circle id="point-heart" cx="100" cy="120" r="4" fill="#f43f5e" />
+                        </g>
+                    </svg>
+                    
+                    <!-- Floating Data Points -->
+                    <div class="absolute top-20 right-10 p-5 glass rounded-2xl border-l-4 border-sky-500">
+                        <div class="flex items-center gap-2 mb-1">
+                            <i data-lucide="heart" class="w-3 h-3 text-rose-500 fill-rose-500"></i>
+                            <span class="text-[9px] text-sky-400 font-bold uppercase">Pulsação Core</span>
+                        </div>
+                        <span id="bpm-val" class="text-3xl font-black text-white italic tracking-tighter">72 <small class="text-xs font-normal opacity-50 uppercase">BPM</small></span>
+                    </div>
+
+                    <div id="indicator-water" class="absolute bottom-20 left-10 p-5 glass rounded-2xl border-l-4 border-sky-400">
+                        <span class="text-[9px] text-sky-400 font-bold block mb-1 uppercase tracking-widest">Estado Hídrico</span>
+                        <div class="flex items-baseline gap-1">
+                            <span id="water-val" class="text-xl font-black text-white italic">ÓTIMO</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="absolute bottom-6 left-6 right-6 flex justify-between items-end z-30">
+                    <div class="space-y-1">
+                        <span class="text-[9px] text-slate-500 font-mono uppercase tracking-widest">Aura_Bio_Scanner_v4.2 // AFROKODICA</span>
+                        <div id="status-log" class="text-[9px] text-sky-400 font-mono italic uppercase bg-sky-500/10 px-2 py-1 rounded">Sincronizando com Bio-Ritmo...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL -->
+            <div class="lg:col-span-3 p-6 border-l border-sky-900/30 space-y-8 bg-slate-950/50 overflow-y-auto">
+                <section>
+                    <h3 class="text-[10px] text-sky-400 font-black uppercase tracking-widest mb-6 italic">03. Telemetria de Saúde</h3>
+                    <div class="grid gap-4">
+                        <div class="p-4 bg-black/40 border border-slate-800 rounded-xl relative overflow-hidden group">
+                            <span class="text-[9px] text-slate-500 uppercase block mb-1">Resistência Imunitária</span>
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                                    <div id="bar-immune" class="h-full bg-sky-500 shadow-[0_0_10px_#0ea5e9] transition-all duration-1000" style="width: 85%"></div>
+                                </div>
+                                <span id="val-immune-p" class="text-xs font-mono text-white">85%</span>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-black/40 border border-slate-800 rounded-xl">
+                            <span class="text-[9px] text-slate-500 uppercase block mb-1">Bio-Eficiência Energética</span>
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                                    <div id="bar-absorp" class="h-full bg-amber-500 shadow-[0_0_10px_#f59e0b] transition-all duration-1000" style="width: 70%"></div>
+                                </div>
+                                <span id="val-energy-p" class="text-xs font-mono text-white">70%</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="module-info-box" class="space-y-4 p-5 bg-sky-900/10 rounded-2xl border border-sky-500/10">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="brain-circuit" class="w-4 h-4 text-sky-400"></i>
+                        <h3 class="text-[10px] text-sky-400 font-black uppercase tracking-widest italic">Análise de Dados</h3>
+                    </div>
+                    <div id="module-text" class="text-[11px] text-slate-400 leading-relaxed italic">
+                        Processando dados nutricionais locais. A Kizaca e o Mukua fornecem a base de micronutrientes para o alto desempenho em ambientes de calor extremo.
+                    </div>
+                </section>
+
+                <button onclick="exportBioReport()" class="w-full py-4 bg-sky-500/10 border border-sky-500/50 text-sky-400 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-sky-500 hover:text-slate-950 transition-all flex items-center justify-center gap-2 group">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> Gerar Bio-Registro Real
+                </button>
+            </div>
+        </div>
+
+        <!-- ACADEMIA BIO MODAL -->
+        <div id="teacher-overlay" class="hidden fixed inset-0 z-[150] bg-slate-950/98 backdrop-blur-2xl flex items-center justify-center p-6">
+            <div class="max-w-5xl w-full bg-slate-900 rounded-[3rem] border border-sky-500/20 overflow-hidden shadow-2xl flex flex-col h-[85vh]">
+                <div class="p-8 bg-sky-500 flex justify-between items-center text-slate-950">
+                    <div class="flex items-center gap-4">
+                        <i data-lucide="graduation-cap" class="w-10 h-10"></i>
+                        <h2 class="text-2xl font-black uppercase tracking-tighter italic">Academia Bio: Conhecimento Expandido</h2>
+                    </div>
+                    <button onclick="toggleTeacherMode(false)" class="p-2 hover:bg-black/10 rounded-full"><i data-lucide="x" class="w-8 h-8"></i></button>
+                </div>
+                <div class="p-10 overflow-y-auto space-y-12 text-slate-300">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="p-6 bg-slate-800/50 rounded-3xl border border-sky-500/10 space-y-4">
+                            <div class="p-3 bg-sky-500/10 rounded-2xl w-fit"><i data-lucide="droplets" class="text-sky-400"></i></div>
+                            <h4 class="text-sky-400 font-bold uppercase text-xs">Termorregulação Tropical</h4>
+                            <p class="text-xs leading-relaxed italic">Como o corpo angolano gere o calor. A transpiração não é perda, é engenharia de resfriamento celular. A falta de água causa stress no ventrículo esquerdo.</p>
+                        </div>
+                        <div class="p-6 bg-slate-800/50 rounded-3xl border border-amber-500/10 space-y-4">
+                            <div class="p-3 bg-amber-500/10 rounded-2xl w-fit"><i data-lucide="leaf" class="text-amber-500"></i></div>
+                            <h4 class="text-amber-400 font-bold uppercase text-xs">Micronutrientes Locais</h4>
+                            <p class="text-xs leading-relaxed italic">Análise da Kizaca e Mukua: Probióticos naturais e ferro biodisponível que fortalecem a barreira hematoencefálica contra infecções tropicais.</p>
+                        </div>
+                        <div class="p-6 bg-slate-800/50 rounded-3xl border border-rose-500/10 space-y-4">
+                            <div class="p-3 bg-rose-500/10 rounded-2xl w-fit"><i data-lucide="heart-pulse" class="text-rose-500"></i></div>
+                            <h4 class="text-rose-400 font-bold uppercase text-xs">Eco-Ritmo Cardíaco</h4>
+                            <p class="text-xs leading-relaxed italic">O batimento cardíaco adapta-se ao ritmo do ambiente. Ritmos altos constantes sem hidratação levam à fadiga mitocondrial.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-8 bg-sky-500/5 rounded-[2rem] border border-sky-500/20">
+                        <h3 class="text-sky-400 font-black uppercase text-sm mb-4">Currículo: Biologia Afrokódica</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs italic">
+                            <div class="flex gap-4 p-4 border-b border-white/5">
+                                <span class="text-sky-500 font-black">01</span>
+                                <p>Sistemas Imunitários em Ambientes de Alta Humidade: O papel do baço e gânglios linfáticos.</p>
+                            </div>
+                            <div class="flex gap-4 p-4 border-b border-white/5">
+                                <span class="text-sky-500 font-black">02</span>
+                                <p>Biofotónica da Melanina: Proteção celular além do espectro visível.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentMod = 'imune';
+        let isMuted = false;
+        let audioCtx = null;
+        let lastBpm = 72;
+
+        const bioModules = {
+            imune: { 
+                bpmBase: 70, 
+                name: "Sistema Imunológico", 
+                color: "#38bdf8",
+                text: "O sistema imunitário trabalha como uma força de defesa Afrokódica. Glóbulos brancos patrulham o organismo contra patógenos tropicais." 
+            },
+            nutri: { 
+                bpmBase: 65, 
+                name: "Metabolismo Nutricional", 
+                color: "#fbbf24",
+                text: "A nutrição baseada em Kizaca e Funge oferece hidratos complexos e ferro, alimentando a bio-eficiência energética celular."
+            },
+            scan: { 
+                bpmBase: 80, 
+                name: "Check-up Tropical", 
+                color: "#10b981",
+                text: "Gestão de stress térmico e resiliência cardíaca em ambientes de alta temperatura e humidade extrema."
+            }
+        };
+
+        function init() {
+            lucide.createIcons();
+            document.getElementById('screensaver').onclick = () => {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                document.getElementById('screensaver').classList.add('hidden');
+                document.getElementById('main-view').classList.remove('hidden');
+                startHeartbeatLoop();
+                startTime();
+            };
+            document.getElementById('input-water').oninput = updateBio;
+            document.getElementById('input-nutri').oninput = updateBio;
+        }
+
+        function playHeartSound() {
+            if (!audioCtx || isMuted) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const time = audioCtx.currentTime;
+            const water = parseInt(document.getElementById('input-water').value);
+            const pitch = 60 + ((100 - water) / 5);
+            createThump(pitch, 0.15, time);
+            createThump(pitch - 5, 0.12, time + 0.15);
+        }
+
+        function createThump(freq, duration, start) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, start);
+            osc.frequency.exponentialRampToValueAtTime(0.01, start + duration);
+            gain.gain.setValueAtTime(0.3, start);
+            gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(start);
+            osc.stop(start + duration);
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            document.getElementById('mute-icon').setAttribute('data-lucide', isMuted ? 'volume-x' : 'volume-2');
+            document.getElementById('mute-text').innerText = isMuted ? "Audio Off" : "Audio On";
+            lucide.createIcons();
+        }
+
+        function startHeartbeatLoop() {
+            const loop = () => {
+                const water = parseInt(document.getElementById('input-water').value);
+                const base = bioModules[currentMod].bpmBase;
+                const finalBpm = Math.round(base + ((100 - water) * 0.4));
+                lastBpm = finalBpm;
+                document.getElementById('bpm-val').innerHTML = `${finalBpm} <small class="text-xs font-normal opacity-50 uppercase">BPM</small>`;
+                playHeartSound();
+                setTimeout(loop, (60 / finalBpm) * 1000);
+            };
+            loop();
+        }
+
+        function updateBio() {
+            const water = parseInt(document.getElementById('input-water').value);
+            const nutri = parseInt(document.getElementById('input-nutri').value);
+            document.getElementById('val-water').innerText = water + "%";
+            document.getElementById('val-nutri').innerText = nutri + "%";
+            
+            const immune = Math.round(nutri * 0.6 + water * 0.4);
+            const energy = Math.round(water * 0.7 + nutri * 0.3);
+            
+            document.getElementById('bar-immune').style.width = immune + '%';
+            document.getElementById('val-immune-p').innerText = immune + '%';
+            document.getElementById('bar-absorp').style.width = energy + '%';
+            document.getElementById('val-energy-p').innerText = energy + '%';
+
+            // Water status label
+            const waterLabel = document.getElementById('water-val');
+            if(water < 30) {
+                waterLabel.innerText = "CRÍTICO";
+                waterLabel.className = "text-xl font-black text-rose-500 italic animate-pulse";
+            } else if (water < 60) {
+                waterLabel.innerText = "ALERTA";
+                waterLabel.className = "text-xl font-black text-amber-500 italic";
+            } else {
+                waterLabel.innerText = "ÓTIMO";
+                waterLabel.className = "text-xl font-black text-emerald-400 italic";
+            }
+
+            // Beat animation speed
+            const beatSec = (60 / lastBpm).toFixed(2);
+            document.documentElement.style.setProperty('--beat-speed', `${beatSec}s`);
+
+            // Bottom status log
+            document.getElementById('status-log').innerText = `BIO_SYNC: MOD=${currentMod.toUpperCase()} | HID=${water}% | RITMO=${lastBpm}BPM`;
+            
+            // Sidebar insight
+            const insightText = water < 40 ? "Risco de desidratação celular detetado. Aumentar fluxo hídrico." : "Sistema biológico em equilíbrio adaptativo.";
+            document.getElementById('bio-insight').innerText = insightText;
+        }
+
+        function setModule(key) {
+            currentMod = key;
+            const mod = bioModules[key];
+            document.querySelectorAll('.invention-card').forEach(c => c.classList.remove('active'));
+            document.getElementById(`mod-${key}`).classList.add('active');
+            
+            document.getElementById('module-info-box').querySelector('h3').innerText = mod.name;
+            document.getElementById('module-text').innerText = mod.text;
+            
+            const human = document.getElementById('human-svg');
+            human.style.color = mod.color + '66';
+            
+            updateBio();
+        }
+
+        function startTime() {
+            setInterval(() => {
+                document.getElementById('nav-clock').innerText = new Date().toLocaleTimeString('pt-PT');
+            }, 1000);
+        }
+
+        function toggleTeacherMode(show) {
+            document.getElementById('teacher-overlay').classList.toggle('hidden', !show);
+            if(show) lucide.createIcons();
+        }
+
+        function exportBioReport() {
+            const water = document.getElementById('input-water').value;
+            const nutri = document.getElementById('input-nutri').value;
+            const immune = document.getElementById('val-immune-p').innerText;
+            const timestamp = new Date().toLocaleString('pt-PT');
+            
+            let conselho = "Manter protocolo atual.";
+            if(water < 50) conselho = "URGENTE: Aumentar ingestão hídrica para evitar stress cardíaco tropical.";
+            if(nutri < 50) conselho = "ALERTA: Bio-eficiência baixa. Recomenda-se reforço de micronutrientes (Mukua/Kizaca).";
+
+            const content = `
+╔══════════════════════════════════════════════════════════╗
+  CENTRO DE CIÊNCIAS DE LUANDA - BIO-REGISTRO EXPANDIDO
+╚══════════════════════════════════════════════════════════╝
+GERADO EM: ${timestamp}
+PROTOCOLO ATUAL: ${bioModules[currentMod].name}
+
+[TELEMETRIA BIOMÉTRICA]
+------------------------------------------------------------
+• RITMO CARDÍACO: ${lastBpm} BPM
+• HIDRATAÇÃO CELULAR: ${water}%
+• ABSORÇÃO NUTRICIONAL: ${nutri}%
+
+[ANÁLISE DE RESILIÊNCIA]
+------------------------------------------------------------
+• RESISTÊNCIA IMUNITÁRIA: ${immune}
+• EFICIÊNCIA ENERGÉTICA: ${document.getElementById('val-energy-p').innerText}
+
+[CONSELHO DA ACADEMIA BIO]
+------------------------------------------------------------
+> ${conselho}
+
+------------------------------------------------------------
+VALIDADO PELO SISTEMA AFROKÓDICA v4.2
+            `.trim();
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `BioRegistro_CCL_${Date.now()}.txt`;
+            a.click();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
